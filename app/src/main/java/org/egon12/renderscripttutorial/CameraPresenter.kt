@@ -25,6 +25,8 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
     var mCameraDevice: CameraDevice? = null
 
+    var mSurface: Surface? = null
+
     val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {
 
         override fun onCaptureCompleted(session: CameraCaptureSession?, request: CaptureRequest?, result: TotalCaptureResult?) {
@@ -34,9 +36,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
     }
 
     override fun onViewComplete() {
-        // doesn't need to do nothing
-        // initCamera is called from view
-        // so it can be more functionalProgramming
+        this.view.setPresenter(this)
     }
 
     override fun initCamera() {
@@ -51,7 +51,8 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
             val size = getCaptureSizes(cameraCharacteristics) ?: return
 
             mImageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.YUV_420_888, 3)
-            val surfaceList: List<Surface> = asList<Surface>(mImageReader?.surface)
+
+            mSurface = mImageReader?.surface
 
             openCamera(mCameraManager, cameraId, callback = {
                 mCameraDevice = it
@@ -64,14 +65,21 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }
     }
 
+    override fun setSurface(surface: Surface?) {
+        if (surface == null) {
+            return
+        }
+        mSurface = surface
+    }
+
     override fun startCamera(handler: Handler) {
         startCamera(handler, true)
     }
 
     fun startCamera(handler: Handler, debug: Boolean) {
-        createSession(mCameraDevice, asList<Surface>(mImageReader?.surface), callback = {
+        createSession(mCameraDevice, asList<Surface>(mSurface), callback = {
             val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            requestBuilder?.addTarget(mImageReader?.surface)
+            requestBuilder?.addTarget(mSurface)
             val request = requestBuilder?.build()
 
             var captureCallback: CameraCaptureSession.CaptureCallback? = null
@@ -95,11 +103,15 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         var cameraLensFacingNumber = 0
         var cameraLensFacingId = ""
 
-        cameraManager.cameraIdList
-                .map { cameraManager.getCameraCharacteristics(it) }
-                .map { it.get(CameraCharacteristics.LENS_FACING) }
-                .filter { it == CameraCharacteristics.LENS_FACING_BACK }
-                .forEach { cameraLensFacingNumber += 1 }
+        for (cameraId in cameraManager.cameraIdList) {
+            if (cameraManager
+                        .getCameraCharacteristics(cameraId)
+                        .get(CameraCharacteristics.LENS_FACING) ==
+                            CameraCharacteristics.LENS_FACING_BACK) {
+                cameraLensFacingId = cameraId
+                cameraLensFacingNumber += 1
+            }
+        }
 
         if (cameraLensFacingNumber == 0) {
             throw Exception("Device doesn't have back camera.")

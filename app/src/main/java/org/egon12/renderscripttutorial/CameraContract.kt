@@ -1,11 +1,10 @@
 package org.egon12.renderscripttutorial
 
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
 import android.os.Handler
+import android.view.Surface
 
 /**
- * Created by egon on 11/3/17.
+ * Contract between view and Presenter
  */
 interface CameraContract {
     interface View {
@@ -18,20 +17,16 @@ interface CameraContract {
 
     }
 
-    interface Presenter  {
+    interface Presenter {
 
         /** Dependecy Injection of needed Service **/
         fun onViewComplete()
 
         fun initCamera()
 
+        fun setSurface(surface: Surface?)
+
         fun startCamera(handler: Handler)
-
-
-
-
-
-
 
 
     }
