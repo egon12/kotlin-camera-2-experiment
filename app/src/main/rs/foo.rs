@@ -74,6 +74,7 @@ rs_allocation gCurrentFrame;
 
 float minHue = 0.0;
 float maxHue = 0.0;
+bool filter = 0;
 
 uchar4 RS_KERNEL yonly(uint32_t x, uint32_t y) {
     uchar4 curPixel;
@@ -82,9 +83,17 @@ uchar4 RS_KERNEL yonly(uint32_t x, uint32_t y) {
     curPixel.g = rsGetElementAtYuv_uchar_U(gCurrentFrame, x, y);
     curPixel.b = rsGetElementAtYuv_uchar_V(gCurrentFrame, x, y);
 
-    float hue = atan2((float) curPixel.g, (float) curPixel.b);
+    float hue = atan2pi((float) curPixel.g, (float) curPixel.b) * 180.f + 15.f;
     if (minHue < hue && hue < maxHue) {
         return rsYuvToRGBA_uchar4(curPixel.r, curPixel.g, curPixel.b);
+    }
+
+    if (filter) {
+        curPixel.r = 0;
+        curPixel.g = 0;
+        curPixel.b = 0;
+        curPixel.a = 255;
+        return curPixel;
     }
 
     curPixel.g = curPixel.r;

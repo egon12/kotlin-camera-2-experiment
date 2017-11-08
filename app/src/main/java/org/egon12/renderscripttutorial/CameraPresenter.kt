@@ -276,4 +276,8 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
     override fun setMaxHue(hue: Float) {
         scriptC_foo._maxHue = hue
     }
+
+    override fun setFilter(fil: Boolean) {
+        scriptC_foo._filter = fil
+    }
 }

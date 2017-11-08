@@ -23,6 +23,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.Surface
 import android.view.TextureView
+import android.widget.CompoundButton
 import kotlinx.android.synthetic.main.activity_camera.*
 
 
@@ -117,6 +118,10 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+        })
+
+        switch1.setOnCheckedChangeListener({ compoundButton: CompoundButton?, b: Boolean ->
+            presenter.setFilter(b)
         })
 
 
