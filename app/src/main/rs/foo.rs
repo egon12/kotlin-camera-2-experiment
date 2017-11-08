@@ -69,3 +69,20 @@ uchar4 RS_KERNEL invert(uchar4 in, uint32_t x, uint32_t y) {
   out.b = 255 - in.b;
   return out;
 }
+
+rs_allocation gCurrentFrame;
+
+uchar4 RS_KERNEL yonly(uint32_t x, uint32_t y) {
+    uchar4 curPixel;
+
+    curPixel.r = rsGetElementAtYuv_uchar_Y(gCurrentFrame, x, y);
+    curPixel.g = rsGetElementAtYuv_uchar_U(gCurrentFrame, x, y);
+    curPixel.b = rsGetElementAtYuv_uchar_V(gCurrentFrame, x, y);
+    atan2(curPixel.g, curPixel.b)
+
+    curPixel.r = rsGetElementAtYuv_uchar_Y(gCurrentFrame, x, y);
+    curPixel.g = rsGetElementAtYuv_uchar_Y(gCurrentFrame, x, y);
+    curPixel.b = rsGetElementAtYuv_uchar_Y(gCurrentFrame, x, y);
+    curPixel.a = 255;
+    return curPixel;
+}

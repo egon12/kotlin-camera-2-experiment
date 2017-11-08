@@ -43,8 +43,8 @@ class CameraActivity : AppCompatActivity(), CameraContract.View {
         }
 
         override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
-            //openCamera()
-            background.execute()
+            openCamera()
+            //background.execute()
         }
 
 
@@ -56,7 +56,10 @@ class CameraActivity : AppCompatActivity(), CameraContract.View {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
         mRs = RenderScript.create(this)
-        presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager)
+        if (mRs == null) {
+            onError("Render Script is not initialized")
+        }
+        presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager, mRs!!)
 
 
 
@@ -139,6 +142,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View {
             val surfaceTexture = cameraPreview.surfaceTexture
             val surface = Surface(surfaceTexture)
 
+            //presenter.setSurface
             presenter.setSurface(surface)
 
 
