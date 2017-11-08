@@ -5,7 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Paint
+import android.graphics.Matrix
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraManager
 import android.os.AsyncTask
@@ -18,37 +19,58 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Surface
 import android.view.TextureView
 import kotlinx.android.synthetic.main.activity_camera.*
 
-class CameraActivity : AppCompatActivity(), CameraContract.View {
+
+class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.SurfaceTextureListener {
 
     private lateinit var presenter: CameraContract.Presenter
 
     private val _cameraRequestCode = 19
 
-    private val cameraPreviewSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
-        override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
-            // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
 
-        override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-            // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            return true
-        }
+    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
+        // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
-        override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
-            // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
+        // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return true
+    }
 
-        override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
-            openCamera()
-            //background.execute()
-        }
-
+    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
 
     }
+
+    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
+        openCamera()
+
+        val rotation = this.windowManager.defaultDisplay.rotation
+        val matrix = Matrix()
+        val viewRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
+        val bufferRect = RectF(0f, 0f, 720F, 544F)
+        val centerX = viewRect.centerX()
+        val centerY = viewRect.centerY()
+        if (Surface.ROTATION_0 == rotation || Surface.ROTATION_180 == rotation) {
+            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
+            /*
+            matrix.setRectToRect(bufferRect, viewRect, Matrix.ScaleToFit.FILL)
+            val scale = Math.max(
+                    width.toFloat() / 720F,
+                    height.toFloat() / 544F)
+            matrix.postScale(scale, scale, centerX, centerY)
+            */
+            matrix.postRotate(90 * (rotation + 1F), centerX, centerY)
+        }
+        cameraPreview.setTransform(matrix)
+
+        //background.execute()
+    }
+
 
     var mRs: RenderScript? = null
 
@@ -63,15 +85,47 @@ class CameraActivity : AppCompatActivity(), CameraContract.View {
 
 
 
-        cameraPreview.surfaceTextureListener = cameraPreviewSurfaceTextureListener
+        cameraPreview.surfaceTextureListener = this
+
+        minHue.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+                var hue = 0F
+                try {
+                    hue = minHue.text.toString().toFloat()
+                } catch (e: NumberFormatException) {
+                }
+
+                presenter.setMinHue(hue)
+            }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+        })
+
+        maxHue.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+                var hue = 0F
+                try {
+                    hue = maxHue.text.toString().toFloat()
+                } catch (e: NumberFormatException) {
+                }
+
+                presenter.setMaxHue(hue)
+            }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+        })
 
 
     }
 
     val background = @SuppressLint("StaticFieldLeak")
-    object:AsyncTask<Unit, Unit, Bitmap>() {
+    object : AsyncTask<Unit, Unit, Bitmap>() {
         override fun doInBackground(vararg p0: Unit?): Bitmap {
-            val bitmap = Bitmap.createBitmap(255,255, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(255, 255, Bitmap.Config.ARGB_8888)
             val alloc = Allocation.createFromBitmap(mRs, bitmap)
             val foo = ScriptC_foo(mRs)
 
@@ -93,7 +147,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View {
             }
             val surface = Surface(cameraPreview.surfaceTexture)
             val canvas = surface.lockCanvas(null)
-            canvas.drawBitmap(result!!, 0F,0F , null)
+            canvas.drawBitmap(result, 0F, 0F, null)
             surface.unlockCanvasAndPost(canvas)
 
 

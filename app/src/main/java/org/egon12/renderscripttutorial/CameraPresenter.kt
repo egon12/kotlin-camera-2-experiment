@@ -3,7 +3,10 @@ package org.egon12.renderscripttutorial
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
-import android.hardware.camera2.*
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
 import android.media.ImageReader
 import android.os.Handler
 import android.os.SystemClock
@@ -11,7 +14,6 @@ import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.Type
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import java.util.Arrays.asList
@@ -38,10 +40,6 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
     val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {
 
-        override fun onCaptureCompleted(session: CameraCaptureSession?, request: CaptureRequest?, result: TotalCaptureResult?) {
-            super.onCaptureCompleted(session, request, result)
-            //Log.v("CameraCaptureComplete", SystemClock.currentThreadTimeMillis().toString())
-        }
     }
 
     override fun onViewComplete() {
@@ -75,7 +73,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
             //val rgbType = Type.createXY(mRenderScript, Element.RGBA_8888(mRenderScript), size.width, size.height)
             //val outputAlloc = Allocation.createTyped(mRenderScript, rgbType, Allocation.USAGE_IO_OUTPUT or Allocation.USAGE_SCRIPT)
             val outputAlloc = Allocation.createFromBitmap(mRenderScript, outputBitmap)
-            scriptC_foo.set_gCurrentFrame(allocation)
+            scriptC_foo._gCurrentFrame = allocation
 
             /*
             //val type = Type.createXY(mRenderScript, Element.YUV(mRenderScript), size.width, size.height)
@@ -88,13 +86,14 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
             */
 
             allocation.setOnBufferAvailableListener { allocation ->
+
                 allocation.ioReceive()
-                val b = allocation.bytesSize
                 scriptC_foo.forEach_yonly(outputAlloc)
                 outputAlloc.copyTo(outputBitmap)
                 val canvas = mViewSurface?.lockCanvas(null)
                 canvas?.drawBitmap(outputBitmap, 0F, 0F, null)
                 mViewSurface?.unlockCanvasAndPost(canvas)
+                SystemClock.sleep(100)
             }
 
 
@@ -257,6 +256,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }, null)
     }
 
+
     private fun createSession(cameraDevice: CameraDevice?, surfaceList: List<Surface>, callback: (captureSession: CameraCaptureSession?) -> Unit) {
         cameraDevice?.createCaptureSession(surfaceList, object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(p0: CameraCaptureSession?) {
@@ -267,5 +267,13 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
                 view.onError("Camera configuration failed?")
             }
         }, null)
+    }
+
+    override fun setMinHue(hue: Float) {
+        scriptC_foo._minHue = hue
+    }
+
+    override fun setMaxHue(hue: Float) {
+        scriptC_foo._maxHue = hue
     }
 }

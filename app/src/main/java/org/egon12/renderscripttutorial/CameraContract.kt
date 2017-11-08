@@ -28,6 +28,10 @@ interface CameraContract {
 
         fun startCamera(handler: Handler)
 
+        fun setMinHue(hue: Float)
+
+        fun setMaxHue(hue: Float)
+
 
     }
 }
