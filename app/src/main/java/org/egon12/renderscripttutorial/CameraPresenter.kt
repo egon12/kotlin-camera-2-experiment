@@ -35,6 +35,8 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }
     }
 
+
+
     override fun onViewComplete() {
         this.view.setPresenter(this)
     }
