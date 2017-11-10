@@ -17,7 +17,6 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Surface
 import android.view.TextureView
-import android.widget.CompoundButton
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_camera.*
 
@@ -28,44 +27,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
 
     private val _cameraRequestCode = 19
 
-
-    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
-    }
-
-    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-        presenter.endCamera()
-        return true
-    }
-
-    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
-
-    }
-
-    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
-        openCamera()
-
-        val rotation = this.windowManager.defaultDisplay.rotation
-        val matrix = Matrix()
-        val viewRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
-        val bufferRect = RectF(0f, 0f, 720F, 544F)
-        val centerX = viewRect.centerX()
-        val centerY = viewRect.centerY()
-        if (Surface.ROTATION_0 == rotation || Surface.ROTATION_180 == rotation) {
-            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-            /*
-            matrix.setRectToRect(bufferRect, viewRect, Matrix.ScaleToFit.FILL)
-            val scale = Math.max(
-                    width.toFloat() / 720F,
-                    height.toFloat() / 544F)
-            matrix.postScale(scale, scale, centerX, centerY)
-            */
-            matrix.postRotate(90 * (rotation + 1F), centerX, centerY)
-        }
-        cameraPreview.setTransform(matrix)
-    }
-
-
-    var mRs: RenderScript? = null
+    private var mRs: RenderScript? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,17 +39,13 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
         presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager, mRs!!)
 
         cameraPreview.surfaceTextureListener = this
-
         minHue.setOnSeekBarChangeListener(onSeekbarChanged)
         maxHue.setOnSeekBarChangeListener(onSeekbarChanged)
-
-        switch1.setOnCheckedChangeListener({ compoundButton: CompoundButton?, b: Boolean ->
-            presenter.setFilter(b)
-        })
+        switch1.setOnCheckedChangeListener({ _, b -> presenter.setFilter(b) })
 
     }
 
-    val onSeekbarChanged = object : SeekBar.OnSeekBarChangeListener {
+    private val onSeekbarChanged = object : SeekBar.OnSeekBarChangeListener {
         override fun onStartTrackingTouch(p0: SeekBar?) {}
 
         override fun onStopTrackingTouch(p0: SeekBar?) {}
@@ -105,7 +63,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
     }
 
 
-    fun openCamera() {
+    private fun openCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
                 // Show an explanation to the user *asynchronously* -- don't block
@@ -141,5 +99,40 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
     override fun onPause() {
         presenter.endCamera()
         super.onPause()
+    }
+
+    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
+    }
+
+    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
+        presenter.endCamera()
+        return true
+    }
+
+    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
+
+    }
+
+    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
+        openCamera()
+
+        val rotation = this.windowManager.defaultDisplay.rotation
+        val matrix = Matrix()
+        val viewRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
+        val bufferRect = RectF(0f, 0f, 720F, 544F)
+        val centerX = viewRect.centerX()
+        val centerY = viewRect.centerY()
+        if (Surface.ROTATION_0 == rotation || Surface.ROTATION_180 == rotation) {
+            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
+            /*
+            matrix.setRectToRect(bufferRect, viewRect, Matrix.ScaleToFit.FILL)
+            val scale = Math.max(
+                    width.toFloat() / 720F,
+                    height.toFloat() / 544F)
+            matrix.postScale(scale, scale, centerX, centerY)
+            */
+            matrix.postRotate(90 * (rotation + 1F), centerX, centerY)
+        }
+        cameraPreview.setTransform(matrix)
     }
 }

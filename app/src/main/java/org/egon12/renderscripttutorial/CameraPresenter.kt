@@ -24,17 +24,17 @@ import java.util.Arrays.asList
 
 class CameraPresenter(private val view: CameraContract.View, private val mCameraManager: CameraManager, private val mRenderScript: RenderScript) : CameraContract.Presenter {
 
-    var mCameraDevice: CameraDevice? = null
+    private var mCameraDevice: CameraDevice? = null
 
-    var mSurface: Surface? = null
+    private var mInputSurface: Surface? = null
 
-    var mViewSurface: Surface? = null
+    private var mViewSurface: Surface? = null
 
-    var mHandler: Handler? = null
+    private var mHandler: Handler? = null
 
-    var scriptC_foo = ScriptC_foo(mRenderScript)
+    private var scriptC_foo = ScriptC_foo(mRenderScript)
 
-    val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {}
+    private val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {}
 
     override fun onViewComplete() {
         this.view.setPresenter(this)
@@ -110,7 +110,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         val type = typeBuilder.create()
         val inputAlloc = Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
         scriptC_foo._gCurrentFrame = inputAlloc
-        mSurface = inputAlloc.surface
+        mInputSurface = inputAlloc.surface
 
         // create output allocation
         val outputType = Type.createXY(mRenderScript, Element.RGBA_8888(mRenderScript), size.width, size.height)
@@ -123,7 +123,6 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
             scriptC_foo.forEach_yonly(outputAlloc)
             outputAlloc.ioSend()
             SystemClock.sleep(100)
-
         }
 
         return inputAlloc
@@ -167,14 +166,14 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
         mCameraDevice = cameraDevice
 
-        if (mSurface == null) {
+        if (mInputSurface == null) {
             view.onError("Surface is not set yet! Allocation maybe fail")
             return
         }
 
-        Companion.createSession(this, mCameraDevice, asList<Surface>(mSurface), {
+        Companion.createSession(this, mCameraDevice, asList<Surface>(mInputSurface), {
             val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            requestBuilder?.addTarget(mSurface)
+            requestBuilder?.addTarget(mInputSurface)
             val request = requestBuilder?.build()
 
             var captureCallback: CameraCaptureSession.CaptureCallback? = null
@@ -217,15 +216,15 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         private fun getCaptureSizes(cameraCharacteristics: CameraCharacteristics, below: Size): Size? {
             val capabilityConfiguration = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
 
-            if (!capabilityConfiguration.outputFormats.contains(ImageFormat.YUV_420_888)) {
+            if (!capabilityConfiguration.outputFormats.contains(ImageFormat.YUV_420_888))
                 throw Exception("Cannot configure camera to use YUV format")
-            }
 
             val outputSizes = capabilityConfiguration.getOutputSizes(ImageFormat.YUV_420_888)
                     .filter { it.width * it.height < below.width * below.height }
-            if (outputSizes.isEmpty()) {
+
+            if (outputSizes.isEmpty())
                 throw Exception("Camera doesn't have size below " + below.width + " x " + below.height)
-            }
+
             return outputSizes.maxBy { it.height }
         }
 
