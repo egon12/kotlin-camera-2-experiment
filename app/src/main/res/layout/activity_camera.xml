@@ -16,26 +16,24 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <EditText
+    <SeekBar
         android:id="@+id/minHue"
-        android:layout_width="64dp"
+        android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:ems="10"
-
+        android:max="400"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <EditText
+    <SeekBar
         android:id="@+id/maxHue"
-        android:layout_width="64dp"
+        android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:ems="10"
-
-
+        android:max="400"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/minHue" />
+
 
     <Switch
         android:id="@+id/switch1"

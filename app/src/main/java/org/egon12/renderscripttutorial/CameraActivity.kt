@@ -15,11 +15,10 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Surface
 import android.view.TextureView
 import android.widget.CompoundButton
+import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_camera.*
 
 
@@ -77,46 +76,32 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
         }
         presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager, mRs!!)
 
-
-
         cameraPreview.surfaceTextureListener = this
 
-        minHue.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-                var hue = 0F
-                try {
-                    hue = minHue.text.toString().toFloat()
-                } catch (e: NumberFormatException) {
-                }
-
-                presenter.setMinHue(hue)
-            }
-
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-        })
-
-        maxHue.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-                var hue = 0F
-                try {
-                    hue = maxHue.text.toString().toFloat()
-                } catch (e: NumberFormatException) {
-                }
-
-                presenter.setMaxHue(hue)
-            }
-
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-        })
+        minHue.setOnSeekBarChangeListener(onSeekbarChanged)
+        maxHue.setOnSeekBarChangeListener(onSeekbarChanged)
 
         switch1.setOnCheckedChangeListener({ compoundButton: CompoundButton?, b: Boolean ->
             presenter.setFilter(b)
         })
 
+    }
+
+    val onSeekbarChanged = object : SeekBar.OnSeekBarChangeListener {
+        override fun onStartTrackingTouch(p0: SeekBar?) {}
+
+        override fun onStopTrackingTouch(p0: SeekBar?) {}
+
+        override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+            if (p0 == null) {
+                return
+            }
+
+            when (p0.id) {
+                R.id.minHue -> presenter.setMinHue((p1 - 200).toFloat())
+                R.id.maxHue -> presenter.setMaxHue((p1 - 200).toFloat())
+            }
+        }
     }
 
 
