@@ -49,7 +49,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
     override fun initCamera() {
 
         try {
-            val cameraId = getLensFacingBackCamera(mCameraManager)
+            val cameraId = getLensFacingBackCameraId(mCameraManager)
 
             val cameraCharacteristics = mCameraManager.getCameraCharacteristics(cameraId)
 
@@ -57,73 +57,26 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
             val size = getCaptureSizes(cameraCharacteristics) ?: return
 
-            val typeBuilder = Type.Builder(mRenderScript, Element.YUV(mRenderScript))
-            typeBuilder.setX(size.width)
-            typeBuilder.setY(size.height)
-            typeBuilder.setYuvFormat(ImageFormat.YUV_420_888)
-            val type = typeBuilder.create()
-            val allocation = Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
-
-            mSurface = allocation.surface
-            //mImageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.YUV_420_888, 3)
-            //allocation.surface = mImageReader?.surface
-            //mSurface = mImageReader?.surface
+            val inputAllocation = createInputAllocation(size)
+            mSurface = inputAllocation.surface
+            scriptC_foo._gCurrentFrame = inputAllocation
 
             var outputBitmap = Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888)
             //val rgbType = Type.createXY(mRenderScript, Element.RGBA_8888(mRenderScript), size.width, size.height)
             //val outputAlloc = Allocation.createTyped(mRenderScript, rgbType, Allocation.USAGE_IO_OUTPUT or Allocation.USAGE_SCRIPT)
             val outputAlloc = Allocation.createFromBitmap(mRenderScript, outputBitmap)
-            scriptC_foo._gCurrentFrame = allocation
 
-            /*
-            //val type = Type.createXY(mRenderScript, Element.YUV(mRenderScript), size.width, size.height)
-
-            PUT)
-            mImageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.YUV_420_888, 3)
-            mSurface = mImageReader?.surface
-            allocation.surface = mSurface
-            scriptC_foo.set_gCurrentFrame(allocation)
-            */
-
-            allocation.setOnBufferAvailableListener { allocation ->
-
+            inputAllocation.setOnBufferAvailableListener { allocation ->
                 allocation.ioReceive()
                 scriptC_foo.forEach_yonly(outputAlloc)
-                outputAlloc.copyTo(outputBitmap)
+                outputAlloc.copyTo(outputAlloc)
+
                 val canvas = mViewSurface?.lockCanvas(null)
                 canvas?.drawBitmap(outputBitmap, 0F, 0F, null)
                 mViewSurface?.unlockCanvasAndPost(canvas)
+
                 SystemClock.sleep(100)
             }
-
-
-            /*
-            mImageReader?.setOnImageAvailableListener({ imageReader ->
-                if (mViewSurface == null) {
-                    return@setOnImageAvailableListener
-                }
-                val img = imageReader.acquireLatestImage()
-                val yBuf = img.planes[0].buffer
-                val uBuf = img.planes[1].buffer
-                val vBuf = img.planes[2].buffer
-
-
-
-
-
-                //var alloc = Allocation.createTyped(mRenderScript, type, Allocation.USAGE_GRAPHICS_TEXTURE)
-                val canvas = mViewSurface?.lockCanvas(null)
-
-                canvas.d
-
-
-                img.close()
-
-
-            }, null)
-            */
-
-
 
             openCamera(mCameraManager, cameraId, callback = {
                 mCameraDevice = it
@@ -137,6 +90,15 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }
     }
 
+    private fun createInputAllocation(size: Size): Allocation {
+        val typeBuilder = Type.Builder(mRenderScript, Element.YUV(mRenderScript))
+        typeBuilder.setX(size.width)
+        typeBuilder.setY(size.height)
+        typeBuilder.setYuvFormat(ImageFormat.YUV_420_888)
+        val type = typeBuilder.create()
+        return Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
+    }
+
     override fun setSurface(surface: Surface?) {
         if (surface == null) {
             return
@@ -148,12 +110,12 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         startCamera(handler, true)
     }
 
-    fun startCamera(handler: Handler, debug: Boolean) {
+    private fun startCamera(handler: Handler, debug: Boolean) {
         if (mSurface == null) {
             view.onError("Surface is not set yet!")
             return
         }
-        createSession(mCameraDevice, asList<Surface>(mSurface), callback = {
+        createSession(mCameraDevice, asList<Surface>(mSurface), {
             val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
             requestBuilder?.addTarget(mSurface)
             val request = requestBuilder?.build()
@@ -174,7 +136,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
      *
      *
      */
-    fun getLensFacingBackCamera(cameraManager: CameraManager): String {
+    private fun getLensFacingBackCameraId(cameraManager: CameraManager): String {
 
         var cameraLensFacingNumber = 0
         var cameraLensFacingId = ""
@@ -202,7 +164,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
 
     private fun checkCameraCapability(cameraCharacteristics: CameraCharacteristics) {
-
+        //val a = ::class.java
         /*
         val afModes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
         if (!afModes.contains(CameraCharacteristics.CONTROL_AF_MODE_AUTO)) {
