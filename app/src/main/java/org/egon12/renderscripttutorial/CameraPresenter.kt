@@ -1,13 +1,11 @@
 package org.egon12.renderscripttutorial
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
-import android.media.ImageReader
 import android.os.Handler
 import android.os.SystemClock
 import android.renderscript.Allocation
@@ -26,61 +24,42 @@ import java.util.Arrays.asList
 
 class CameraPresenter(private val view: CameraContract.View, private val mCameraManager: CameraManager, private val mRenderScript: RenderScript) : CameraContract.Presenter {
 
-    val mMaxSize = 1024 * 768
-
-    var mImageReader: ImageReader? = null
-
     var mCameraDevice: CameraDevice? = null
 
     var mSurface: Surface? = null
 
     var mViewSurface: Surface? = null
 
+    var mHandler: Handler? = null
+
     var scriptC_foo = ScriptC_foo(mRenderScript)
 
-    val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {
-
-    }
+    val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {}
 
     override fun onViewComplete() {
         this.view.setPresenter(this)
     }
 
-    override fun initCamera() {
+    override fun initCamera(viewSurface: Surface?, handler: Handler) {
+
+        mViewSurface = viewSurface
+        mHandler = handler
 
         try {
             val cameraId = getLensFacingBackCameraId(mCameraManager)
 
-            val cameraCharacteristics = mCameraManager.getCameraCharacteristics(cameraId)
+            // check camera capability and recommended size
+            val cc = mCameraManager.getCameraCharacteristics(cameraId)
+            Companion.checkCameraCapability(cc) // should throw error if it doesnt has capability needed by this app
+            val size = Companion.getCaptureSizes(cc, below = Size(1024, 768)) ?: return
 
-            checkCameraCapability(cameraCharacteristics)
+            // get the size
+            createAllocation(size)
 
-            val size = getCaptureSizes(cameraCharacteristics) ?: return
-
-            val inputAllocation = createInputAllocation(size)
-            mSurface = inputAllocation.surface
-            scriptC_foo._gCurrentFrame = inputAllocation
-
-            var outputBitmap = Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888)
-            //val rgbType = Type.createXY(mRenderScript, Element.RGBA_8888(mRenderScript), size.width, size.height)
-            //val outputAlloc = Allocation.createTyped(mRenderScript, rgbType, Allocation.USAGE_IO_OUTPUT or Allocation.USAGE_SCRIPT)
-            val outputAlloc = Allocation.createFromBitmap(mRenderScript, outputBitmap)
-
-            inputAllocation.setOnBufferAvailableListener { allocation ->
-                allocation.ioReceive()
-                scriptC_foo.forEach_yonly(outputAlloc)
-                outputAlloc.copyTo(outputAlloc)
-
-                val canvas = mViewSurface?.lockCanvas(null)
-                canvas?.drawBitmap(outputBitmap, 0F, 0F, null)
-                mViewSurface?.unlockCanvasAndPost(canvas)
-
-                SystemClock.sleep(100)
-            }
-
-            openCamera(mCameraManager, cameraId, callback = {
-                mCameraDevice = it
+            // ok open camera and start the callback
+            openCamera(mCameraManager, cameraId, {
                 view.info("Init Camera Done")
+                startCamera(it, handler, true)
             })
 
         } catch (e: Exception) {
@@ -90,51 +69,11 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }
     }
 
-    private fun createInputAllocation(size: Size): Allocation {
-        val typeBuilder = Type.Builder(mRenderScript, Element.YUV(mRenderScript))
-        typeBuilder.setX(size.width)
-        typeBuilder.setY(size.height)
-        typeBuilder.setYuvFormat(ImageFormat.YUV_420_888)
-        val type = typeBuilder.create()
-        return Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
-    }
-
-    override fun setSurface(surface: Surface?) {
-        if (surface == null) {
-            return
-        }
-        mViewSurface = surface
-    }
-
-    override fun startCamera(handler: Handler) {
-        startCamera(handler, true)
-    }
-
-    private fun startCamera(handler: Handler, debug: Boolean) {
-        if (mSurface == null) {
-            view.onError("Surface is not set yet!")
-            return
-        }
-        createSession(mCameraDevice, asList<Surface>(mSurface), {
-            val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            requestBuilder?.addTarget(mSurface)
-            val request = requestBuilder?.build()
-
-            var captureCallback: CameraCaptureSession.CaptureCallback? = null
-            if (debug) captureCallback = mCaptureCallback
-
-            it?.setRepeatingRequest(request, captureCallback, handler)
-        })
-
-    }
-
     /**
-     * how if the device have two camea in back?
+     * how if the device have two camera in back?
      * or have four camera two in front and two in back.
      *
      * Sorry but it has some checking in here.
-     *
-     *
      */
     private fun getLensFacingBackCameraId(cameraManager: CameraManager): String {
 
@@ -162,30 +101,32 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         return cameraLensFacingId
     }
 
+    private fun createAllocation(size: Size): Allocation {
+        // Create input allocation
+        val typeBuilder = Type.Builder(mRenderScript, Element.YUV(mRenderScript))
+        typeBuilder.setX(size.width)
+        typeBuilder.setY(size.height)
+        typeBuilder.setYuvFormat(ImageFormat.YUV_420_888)
+        val type = typeBuilder.create()
+        val inputAlloc = Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
+        scriptC_foo._gCurrentFrame = inputAlloc
+        mSurface = inputAlloc.surface
 
-    private fun checkCameraCapability(cameraCharacteristics: CameraCharacteristics) {
-        //val a = ::class.java
-        /*
-        val afModes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
-        if (!afModes.contains(CameraCharacteristics.CONTROL_AF_MODE_AUTO)) {
-            throw Exception("Camera doesn't have auto focus")
+        // create output allocation
+        val outputType = Type.createXY(mRenderScript, Element.RGBA_8888(mRenderScript), size.width, size.height)
+        val outputAlloc = Allocation.createTyped(mRenderScript, outputType, Allocation.USAGE_IO_OUTPUT or Allocation.USAGE_SCRIPT)
+        outputAlloc.surface = mViewSurface
+
+        // transfer input to output allocation
+        inputAlloc.setOnBufferAvailableListener { allocation ->
+            allocation.ioReceive()
+            scriptC_foo.forEach_yonly(outputAlloc)
+            outputAlloc.ioSend()
+            SystemClock.sleep(100)
+
         }
-        */
-    }
 
-    private fun getCaptureSizes(cameraCharacteristics: CameraCharacteristics): Size? {
-        val capabilityConfiguration = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-
-        if (!capabilityConfiguration.outputFormats.contains(ImageFormat.YUV_420_888)) {
-            throw Exception("Cannot configure camera to use YUV format")
-        }
-
-        val outputSizes = capabilityConfiguration.getOutputSizes(ImageFormat.YUV_420_888)
-                .filter { it.width * it.height < mMaxSize }
-        if (outputSizes.isEmpty()) {
-            throw Exception("Camera doesn't have size below 1024 x 768")
-        }
-        return outputSizes.maxBy { it.height }
+        return inputAlloc
     }
 
     @SuppressLint("MissingPermission")
@@ -218,17 +159,35 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }, null)
     }
 
+    private fun startCamera(cameraDevice: CameraDevice?, handler: Handler, debug: Boolean) {
+        if (cameraDevice == null) {
+            view.onError("Camera Device is opened but null")
+            return
+        }
 
-    private fun createSession(cameraDevice: CameraDevice?, surfaceList: List<Surface>, callback: (captureSession: CameraCaptureSession?) -> Unit) {
-        cameraDevice?.createCaptureSession(surfaceList, object : CameraCaptureSession.StateCallback() {
-            override fun onConfigured(p0: CameraCaptureSession?) {
-                callback(p0)
-            }
+        mCameraDevice = cameraDevice
 
-            override fun onConfigureFailed(p0: CameraCaptureSession?) {
-                view.onError("Camera configuration failed?")
-            }
-        }, null)
+        if (mSurface == null) {
+            view.onError("Surface is not set yet! Allocation maybe fail")
+            return
+        }
+
+        Companion.createSession(this, mCameraDevice, asList<Surface>(mSurface), {
+            val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            requestBuilder?.addTarget(mSurface)
+            val request = requestBuilder?.build()
+
+            var captureCallback: CameraCaptureSession.CaptureCallback? = null
+            if (debug) captureCallback = mCaptureCallback
+
+            it?.setRepeatingRequest(request, captureCallback, handler)
+        })
+
+    }
+
+    override fun endCamera() {
+        mCameraDevice?.close()
+
     }
 
     override fun setMinHue(hue: Float) {
@@ -241,5 +200,45 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
     override fun setFilter(fil: Boolean) {
         scriptC_foo._filter = fil
+    }
+
+    companion object {
+
+        private fun checkCameraCapability(cameraCharacteristics: CameraCharacteristics) {
+            //val a = ::class.java
+            /*
+            val afModes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+            if (!afModes.contains(CameraCharacteristics.CONTROL_AF_MODE_AUTO)) {
+                throw Exception("Camera doesn't have auto focus")
+            }
+            */
+        }
+
+        private fun getCaptureSizes(cameraCharacteristics: CameraCharacteristics, below: Size): Size? {
+            val capabilityConfiguration = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+
+            if (!capabilityConfiguration.outputFormats.contains(ImageFormat.YUV_420_888)) {
+                throw Exception("Cannot configure camera to use YUV format")
+            }
+
+            val outputSizes = capabilityConfiguration.getOutputSizes(ImageFormat.YUV_420_888)
+                    .filter { it.width * it.height < below.width * below.height }
+            if (outputSizes.isEmpty()) {
+                throw Exception("Camera doesn't have size below " + below.width + " x " + below.height)
+            }
+            return outputSizes.maxBy { it.height }
+        }
+
+        private fun createSession(cameraPresenter: CameraPresenter, cameraDevice: CameraDevice?, surfaceList: List<Surface>, callback: (captureSession: CameraCaptureSession?) -> Unit) {
+            cameraDevice?.createCaptureSession(surfaceList, object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(p0: CameraCaptureSession?) {
+                    callback(p0)
+                }
+
+                override fun onConfigureFailed(p0: CameraCaptureSession?) {
+                    cameraPresenter.view.onError("Camera configuration failed?")
+                }
+            }, null)
+        }
     }
 }

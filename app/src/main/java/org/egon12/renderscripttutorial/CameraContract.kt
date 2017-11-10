@@ -22,11 +22,9 @@ interface CameraContract {
         /** Dependecy Injection of needed Service **/
         fun onViewComplete()
 
-        fun initCamera()
+        fun initCamera(viewSurface: Surface?, handler: Handler)
 
-        fun setSurface(surface: Surface?)
-
-        fun startCamera(handler: Handler)
+        fun endCamera()
 
         fun setMinHue(hue: Float)
 

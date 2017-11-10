@@ -83,7 +83,7 @@ uchar4 RS_KERNEL yonly(uint32_t x, uint32_t y) {
     curPixel.g = rsGetElementAtYuv_uchar_U(gCurrentFrame, x, y);
     curPixel.b = rsGetElementAtYuv_uchar_V(gCurrentFrame, x, y);
 
-    float hue = atan2pi((float) curPixel.g, (float) curPixel.b) * 180.f + 15.f;
+    float hue = atan2pi((float) curPixel.g- 128, (float) curPixel.b- 128) * 180.f + 15.f;
     if (minHue < hue && hue < maxHue) {
         return rsYuvToRGBA_uchar4(curPixel.r, curPixel.g, curPixel.b);
     }
