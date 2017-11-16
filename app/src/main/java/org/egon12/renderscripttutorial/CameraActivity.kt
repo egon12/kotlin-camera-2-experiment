@@ -27,22 +27,19 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
 
     private val _cameraRequestCode = 19
 
-    private var mRs: RenderScript? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
-        mRs = RenderScript.create(this)
-        if (mRs == null) {
-            onError("Render Script is not initialized")
-        }
-        presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager, mRs!!)
+        presenter = CameraPresenter(
+                this,
+                getSystemService(Context.CAMERA_SERVICE) as CameraManager,
+                RenderScript.create(this)
+        )
 
         cameraPreview.surfaceTextureListener = this
         minHue.setOnSeekBarChangeListener(onSeekbarChanged)
         maxHue.setOnSeekBarChangeListener(onSeekbarChanged)
         switch1.setOnCheckedChangeListener({ _, b -> presenter.setFilter(b) })
-
     }
 
     private val onSeekbarChanged = object : SeekBar.OnSeekBarChangeListener {
@@ -51,9 +48,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
         override fun onStopTrackingTouch(p0: SeekBar?) {}
 
         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            if (p0 == null) {
-                return
-            }
+            if (p0 == null) return
 
             when (p0.id) {
                 R.id.minHue -> presenter.setMinHue((p1 - 200).toFloat())

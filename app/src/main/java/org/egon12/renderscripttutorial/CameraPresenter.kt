@@ -32,7 +32,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
     private var mHandler: Handler? = null
 
-    private var scriptC_foo = ScriptC_foo(mRenderScript)
+    private var script = ScriptC_filtercolor(mRenderScript)
 
     private val mCaptureCallback = object : CameraCaptureSession.CaptureCallback() {}
 
@@ -43,6 +43,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
     override fun initCamera(viewSurface: Surface?, handler: Handler) {
 
         mViewSurface = viewSurface
+
         mHandler = handler
 
         try {
@@ -109,7 +110,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         typeBuilder.setYuvFormat(ImageFormat.YUV_420_888)
         val type = typeBuilder.create()
         val inputAlloc = Allocation.createTyped(mRenderScript, type, Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT)
-        scriptC_foo._gCurrentFrame = inputAlloc
+        script._gCurrentFrame = inputAlloc
         mInputSurface = inputAlloc.surface
 
         // create output allocation
@@ -120,7 +121,7 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         // transfer input to output allocation
         inputAlloc.setOnBufferAvailableListener { allocation ->
             allocation.ioReceive()
-            scriptC_foo.forEach_yonly(outputAlloc)
+            script.forEach_filtercolor(outputAlloc)
             outputAlloc.ioSend()
             SystemClock.sleep(100)
         }
@@ -186,19 +187,18 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
     override fun endCamera() {
         mCameraDevice?.close()
-
     }
 
     override fun setMinHue(hue: Float) {
-        scriptC_foo._minHue = hue
+        script._minHue = hue
     }
 
     override fun setMaxHue(hue: Float) {
-        scriptC_foo._maxHue = hue
+        script._maxHue = hue
     }
 
     override fun setFilter(fil: Boolean) {
-        scriptC_foo._filter = fil
+        script._filter = fil
     }
 
     companion object {

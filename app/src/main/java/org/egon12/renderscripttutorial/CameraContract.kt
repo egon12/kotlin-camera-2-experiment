@@ -31,7 +31,5 @@ interface CameraContract {
         fun setMaxHue(hue: Float)
 
         fun setFilter(fil: Boolean)
-
-
     }
 }
