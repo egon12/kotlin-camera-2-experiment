@@ -51,6 +51,7 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
         val bufferRect = RectF(0f, 0f, 720F, 544F)
         val centerX = viewRect.centerX()
         val centerY = viewRect.centerY()
+        matrix.postRotate(-90 * (rotation + 1F), centerX, centerY)
         if (Surface.ROTATION_0 == rotation || Surface.ROTATION_180 == rotation) {
             bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
             /*
