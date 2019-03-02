@@ -50,8 +50,8 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
             // check camera capability and recommended size
             val cc = mCameraManager.getCameraCharacteristics(cameraId)
-            Companion.checkCameraCapability(cc) // should throw error if it doesnt has capability needed by this app
-            val size = Companion.getCaptureSizes(cc, below = Size(1024, 768)) ?: return
+            checkCameraCapability(cc) // should throw error if it doesnt has capability needed by this app
+            val size = getCaptureSizes(cc, below = Size(1024, 768)) ?: return
 
             // get the size
             createAllocation(size)
@@ -166,22 +166,23 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
         }
 
         mCameraDevice = cameraDevice
+        val surface = mSurface
 
-        if (mSurface == null) {
+        if (surface == null) {
             view.onError("Surface is not set yet! Allocation maybe fail")
             return
         }
 
-        Companion.createSession(this, mCameraDevice, asList<Surface>(mSurface), {
+        createSession(this, mCameraDevice, asList<Surface>(surface)) {
             val requestBuilder = it?.device?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            requestBuilder?.addTarget(mSurface)
-            val request = requestBuilder?.build()
+            requestBuilder?.addTarget(surface)
+            val request = requestBuilder?.build() ?: return@createSession
 
             var captureCallback: CameraCaptureSession.CaptureCallback? = null
             if (debug) captureCallback = mCaptureCallback
 
-            it?.setRepeatingRequest(request, captureCallback, handler)
-        })
+            it.setRepeatingRequest(request, captureCallback, handler)
+        }
 
     }
 
@@ -206,16 +207,17 @@ class CameraPresenter(private val view: CameraContract.View, private val mCamera
 
         private fun checkCameraCapability(cameraCharacteristics: CameraCharacteristics) {
             //val a = ::class.java
-            /*
             val afModes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+                    ?: throw Exception("Cannot get camera characteristic")
+
             if (!afModes.contains(CameraCharacteristics.CONTROL_AF_MODE_AUTO)) {
-                throw Exception("Camera doesn't have auto focus")
+                // comment for now because emulator doesn't have auto focus
+//                throw Exception("Camera doesn't have auto focus")
             }
-            */
         }
 
         private fun getCaptureSizes(cameraCharacteristics: CameraCharacteristics, below: Size): Size? {
-            val capabilityConfiguration = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            val capabilityConfiguration = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: throw RuntimeException("Cannot configuration")
 
             if (!capabilityConfiguration.outputFormats.contains(ImageFormat.YUV_420_888)) {
                 throw Exception("Cannot configure camera to use YUV format")
