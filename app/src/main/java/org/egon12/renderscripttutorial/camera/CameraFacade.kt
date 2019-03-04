@@ -1,4 +1,4 @@
-package org.egon12.renderscripttutorial
+package org.egon12.renderscripttutorial.camera
 
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
@@ -7,6 +7,10 @@ import android.view.Surface
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import org.egon12.renderscripttutorial.camera.CameraChooser
+import org.egon12.renderscripttutorial.camera.SimpleCameraChooser
+import org.egon12.renderscripttutorial.camera.SimpleCameraOpener
+import org.egon12.renderscripttutorial.camera.SimpleCameraStarter
 
 class CameraFacade(
         private val cameraManager: CameraManager

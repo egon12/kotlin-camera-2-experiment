@@ -1,4 +1,4 @@
-package org.egon12.renderscripttutorial
+package org.egon12.renderscripttutorial.camera
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice

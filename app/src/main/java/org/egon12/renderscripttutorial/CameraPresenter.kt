@@ -11,6 +11,7 @@ import android.renderscript.Type
 import android.support.annotation.RequiresPermission
 import android.util.Size
 import android.view.Surface
+import org.egon12.renderscripttutorial.camera.CameraFacade
 
 /**
  * Camera Presenter
