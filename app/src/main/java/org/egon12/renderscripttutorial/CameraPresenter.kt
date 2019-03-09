@@ -5,6 +5,7 @@ import android.hardware.camera2.CameraManager
 import android.os.Handler
 import android.os.SystemClock
 import android.renderscript.Allocation
+import android.renderscript.Allocation.*
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.Type
@@ -12,6 +13,7 @@ import android.support.annotation.RequiresPermission
 import android.util.Size
 import android.view.Surface
 import org.egon12.renderscripttutorial.camera.CameraFacade
+import org.egon12.renderscripttutorial.video.VideoPlayer
 
 /**
  * Camera Presenter
@@ -19,7 +21,12 @@ import org.egon12.renderscripttutorial.camera.CameraFacade
  * This is the complex way to use camera
  */
 
-class CameraPresenter(private val view: CameraContract.View, mCameraManager: CameraManager, private val mRenderScript: RenderScript) : CameraContract.Presenter {
+class CameraPresenter(
+        private val view: CameraContract.View,
+        cameraManager: CameraManager,
+        private val videoPlayer: VideoPlayer,
+        private val mRenderScript: RenderScript
+) : CameraContract.Presenter {
 
     var mViewSurface: Surface? = null
 
@@ -27,7 +34,9 @@ class CameraPresenter(private val view: CameraContract.View, mCameraManager: Cam
 
     private var scriptC_foo = ScriptC_foo(mRenderScript)
 
-    private val cameraFacade = CameraFacade(mCameraManager)
+    private var scriptC_video = ScriptC_video(mRenderScript)
+
+    private val cameraFacade = CameraFacade(cameraManager)
 
     override fun onViewComplete() {
         this.view.setPresenter(this)
@@ -45,19 +54,21 @@ class CameraPresenter(private val view: CameraContract.View, mCameraManager: Cam
 
             val size = cameraFacade.getSize(cameraId)
 
-            val inputAlloc = createInputAllocation(size)
+            val inputAlloc = createInputAllocation2(Size(320, 240))
 
-            val outputAlloc = createOutputAllocation(size)
+            val outputAlloc = createOutputAllocation(Size(320, 240))
 
             inputAlloc.setOnBufferAvailableListener { allocation ->
                 allocation.ioReceive()
-                scriptC_foo.forEach_yonly(outputAlloc)
+//                scriptC_foo.forEach_yonly(outputAlloc)
+                scriptC_video.forEach_process(outputAlloc)
+//                scriptC_video.forEach_process(outputAlloc)
                 outputAlloc.ioSend()
-                SystemClock.sleep(100)
-
             }
 
-            cameraFacade.showCameraInSurface(inputAlloc.surface)
+
+            videoPlayer.something(inputAlloc.surface)
+//            cameraFacade.showCameraInSurface(inputAlloc.surface)
 
         } catch (e: Exception) {
             view.onError("Error on initCamera: " + e.message)
@@ -68,7 +79,7 @@ class CameraPresenter(private val view: CameraContract.View, mCameraManager: Cam
 
 
     override fun endCamera() {
-        cameraFacade.stop()
+//        cameraFacade.stop()
     }
 
     override fun setMinHue(hue: Float) {
@@ -91,13 +102,34 @@ class CameraPresenter(private val view: CameraContract.View, mCameraManager: Cam
                 .setYuvFormat(ImageFormat.YUV_420_888)
                 .create()
 
-        val inputAlloc = Allocation.createTyped(
+        val inputAlloc = createTyped(
                 mRenderScript,
                 type,
-                Allocation.USAGE_IO_INPUT or Allocation.USAGE_SCRIPT
+                USAGE_IO_INPUT or USAGE_SCRIPT
         )
 
         scriptC_foo._gCurrentFrame = inputAlloc
+
+        return inputAlloc
+    }
+
+    private fun createInputAllocation2(size: Size): Allocation {
+        val type = Type
+                .Builder(mRenderScript, Element.YUV(mRenderScript))
+                .setX(size.width)
+                .setY(size.height)
+                .setYuvFormat(ImageFormat.YUV_420_888)
+                .create()
+
+        val inputAlloc = createTyped(
+                mRenderScript,
+                type,
+                USAGE_IO_INPUT or USAGE_SCRIPT
+        )
+
+        scriptC_video._inputFrame = inputAlloc
+
+//        scriptC_foo._gCurrentFrame = inputAlloc
 
         return inputAlloc
     }
@@ -109,10 +141,10 @@ class CameraPresenter(private val view: CameraContract.View, mCameraManager: Cam
                 size.width,
                 size.height
         )
-        val outputAlloc = Allocation.createTyped(
+        val outputAlloc = createTyped(
                 mRenderScript,
                 outputType,
-                Allocation.USAGE_IO_OUTPUT or Allocation.USAGE_SCRIPT
+                USAGE_IO_OUTPUT or USAGE_SCRIPT
         )
         outputAlloc.surface = mViewSurface
         return outputAlloc

@@ -21,6 +21,7 @@ import android.view.Surface
 import android.view.TextureView
 import android.widget.CompoundButton
 import kotlinx.android.synthetic.main.activity_camera.*
+import org.egon12.renderscripttutorial.video.VideoPlayer
 
 
 class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.SurfaceTextureListener {
@@ -76,7 +77,12 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
         if (mRs == null) {
             onError("Render Script is not initialized")
         }
-        presenter = CameraPresenter(this, getSystemService(Context.CAMERA_SERVICE) as CameraManager, mRs!!)
+        presenter = CameraPresenter(
+                this,
+                getSystemService(Context.CAMERA_SERVICE) as CameraManager,
+                VideoPlayer(this),
+                mRs!!
+        )
 
 
 
