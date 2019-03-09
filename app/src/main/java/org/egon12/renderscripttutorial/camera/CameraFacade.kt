@@ -2,7 +2,7 @@ package org.egon12.renderscripttutorial.camera
 
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
-import android.support.annotation.RequiresPermission
+import androidx.annotation.RequiresPermission
 import android.view.Surface
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope

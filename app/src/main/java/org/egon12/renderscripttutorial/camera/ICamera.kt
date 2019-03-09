@@ -1,7 +1,7 @@
 package org.egon12.renderscripttutorial.camera
 
 import android.hardware.camera2.CameraDevice
-import android.support.annotation.RequiresPermission
+import androidx.annotation.RequiresPermission
 import android.util.Size
 import android.view.Surface
 

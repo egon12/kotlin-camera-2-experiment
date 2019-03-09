@@ -9,7 +9,7 @@ import android.renderscript.Allocation.*
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.Type
-import android.support.annotation.RequiresPermission
+import androidx.annotation.RequiresPermission
 import android.util.Size
 import android.view.Surface
 import org.egon12.renderscripttutorial.camera.CameraFacade

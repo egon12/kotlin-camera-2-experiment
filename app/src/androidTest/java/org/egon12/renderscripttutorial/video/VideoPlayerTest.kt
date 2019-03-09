@@ -6,8 +6,8 @@ import android.media.MediaExtractor
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.SystemClock
-import android.support.test.InstrumentationRegistry
-import android.support.test.rule.ActivityTestRule
+import androidx.test.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
 import android.view.Surface
 import kotlinx.android.synthetic.main.activity_surface.*
 import org.egon12.renderscripttutorial.R
