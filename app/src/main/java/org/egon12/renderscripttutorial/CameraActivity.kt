@@ -11,15 +11,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.renderscript.RenderScript
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Surface
 import android.view.TextureView
 import android.widget.CompoundButton
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_camera.*
 import org.egon12.renderscripttutorial.video.VideoPlayer
 

@@ -9,7 +9,7 @@ import android.hardware.camera2.CameraMetadata.LENS_FACING_BACK
 import android.util.Size
 
 
-class SimpleCameraChooser(private val cameraManager: CameraManager) : CameraChooser {
+class SimpleYuvCameraChooser(private val cameraManager: CameraManager) : CameraChooser {
 
     private val sizeBelow = Size(1024, 768)
 
