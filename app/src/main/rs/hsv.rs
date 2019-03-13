@@ -16,9 +16,9 @@ bool vForce = 0;
 int vForceValue = 0;
 
 
-static void rgb2hsv(uchar4 in, int* h, uchar* s, uchar* v);
+static void rgb2hsv(uchar4 in, float* h, float* s, uchar* v);
 
-static uchar4 hsv2rgb(int h, uchar s, uchar v);
+static uchar4 hsv2rgb(float h, float s, uchar v);
 
 static uchar4 getRgb(uint32_t x, uint32_t y);
 
@@ -29,8 +29,8 @@ uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
     if (x > 320) {
         return in;
     } else {
-        int h;
-        uchar s, v;
+        float h, s;
+        uchar v;
         rgb2hsv(in, &h, &s, &v);
 
         if (hForce) {
@@ -46,6 +46,9 @@ uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
         }
 
 
+        h = h+10;
+        if (h > 360.0) h -= 360.0;
+
         return hsv2rgb(h, s, v);
     }
 }
@@ -58,32 +61,33 @@ static uchar4 getRgb(uint32_t x, uint32_t y) {
 }
 
 
-static void rgb2hsv(uchar4 in, int* h, uchar* s, uchar* v) {
+static void rgb2hsv(uchar4 in, float* h, float* s, uchar* v) {
     uchar minRGB = min( in.r, min( in.g, in.b ) );
     uchar maxRGB = max( in.r, max( in.g, in.b ) );
     uchar deltaRGB = maxRGB - minRGB;
     *v = maxRGB;
 
-    if ( deltaRGB <= 0) {
-        *h = 0; // undefined ???
-        *s = 0;
-    } else { // deltaRGB > 0 -> maxRGB > 0
-        *s = (255 * deltaRGB) / maxRGB;
-        if (in.r >= maxRGB) {
-            if( in.g > in.b ) {
-                *h = (30 * (in.g - in.b)) / deltaRGB;        // between yellow & magenta
-            } else {
-                *h = 180 + (30 * (in.g - in.b)) / deltaRGB;
-            }
-        } else if (in.g >= maxRGB) {
-            *h = 60 + (30 * (in.b - in.r)) / deltaRGB;  // between cyan & yellow
-        } else {
-            *h = 120 + (30 * (in.r - in.g)) / deltaRGB;  // between magenta & cyan
-        }
+    if (deltaRGB == 0) {
+        *h = 0.0;
+        *s = 0.0;
+        return;
     }
+
+    *s = 255 * deltaRGB / maxRGB;
+
+    float hueSixth;
+    if (in.r >= maxRGB) {
+        hueSixth = (in.g - in.b) / deltaRGB;
+        if (hueSixth < 0.f) hueSixth += 6.f;
+    } else if (in.g >= maxRGB) {
+        hueSixth = 2.f + (in.b - in.r) / deltaRGB;
+    } else {
+        hueSixth = 4.f + (in.r - in.g) / deltaRGB;
+    }
+    *h = 360.0 * hueSixth / 6.f;
 }
 
-static uchar4 hsv2rgb(int h, uchar s, uchar v) {
+static uchar4 hsv2rgb(float h, float s, uchar v) {
     uchar4 out;
 
     out.a = 255;
@@ -94,7 +98,7 @@ static uchar4 hsv2rgb(int h, uchar s, uchar v) {
         return out;
     }
 
-    float hueSix = h / 360.0;
+    float hueSix = h / 60.0;
     int hueSixCategory = (int) hueSix;
     float hueSixReminder = hueSix - hueSixCategory;
     float saturationNorm = s / 255.0;
