@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
-
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -46,7 +44,17 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
 }
 
-tasks.create<Exec>("main") {
+tasks.create<Exec>("pie") {
+    val emulator = android.sdkDirectory.path + "/emulator/emulator"
+    val detach = "> /dev/null 2> /dev/null < /dev/null &"
+    commandLine(
+            "sh",
+            "-c",
+            "$emulator @pie $detach"
+    )
+}
+
+tasks.create<Exec>("hsv") {
     dependsOn("installDebug")
     commandLine(
             android.adbExecutable.path,
@@ -54,9 +62,24 @@ tasks.create<Exec>("main") {
             "am",
             "start-activity",
             "-n",
-            "org.egon12.renderscripttutorial/.MainActivity"
+            "org.egon12.renderscripttutorial/.MainActivity",
+            "-d hsv"
     )
 }
+
+tasks.create<Exec>("uv_hue") {
+    dependsOn("installDebug")
+    commandLine(
+            android.adbExecutable.path,
+            "shell",
+            "am",
+            "start-activity",
+            "-n",
+            "org.egon12.renderscripttutorial/.MainActivity",
+            "-d uv_hue"
+    )
+}
+
 
 tasks.create<Exec>("stop") {
     commandLine(
@@ -68,7 +91,3 @@ tasks.create<Exec>("stop") {
 
     )
 }
-
-
-
-
