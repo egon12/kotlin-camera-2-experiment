@@ -1,15 +1,15 @@
 package org.egon12.renderscripttutorial
 
-import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.renderscript.RenderScript
 import android.view.*
-import android.widget.SeekBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.saturation_fragment.*
 import org.egon12.renderscripttutorial.camera.CameraFacade
+import org.egon12.renderscripttutorial.util.SeekBarListener
+import org.egon12.renderscripttutorial.util.TextureAvailableListener
 
 
 class HsvFragment : Fragment() {
@@ -77,33 +77,4 @@ class HsvFragment : Fragment() {
     }
 }
 
-/**
- *
- */
-private class TextureAvailableListener(val func: (SurfaceTexture) -> Unit) : TextureView.SurfaceTextureListener {
-    override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {}
 
-    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
-        return false
-    }
-
-    override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
-        surface?.let { func(it) }
-    }
-
-    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {}
-}
-
-
-/**
- *
- */
-private class SeekBarListener(val func: (Int) -> Unit) : SeekBar.OnSeekBarChangeListener {
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        func(progress)
-    }
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-}

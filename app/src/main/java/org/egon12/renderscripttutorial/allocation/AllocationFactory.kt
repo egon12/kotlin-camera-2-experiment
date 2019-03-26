@@ -60,7 +60,25 @@ class AllocationFactory(
         outputAlloc.surface = surface
 
         return outputAlloc
+    }
 
+    fun createYuvOutputAllocation(size: Size, surface: Surface): Allocation {
+
+        val type = Type
+                .Builder(renderScript, Element.YUV(renderScript))
+                .setX(size.width)
+                .setY(size.height)
+                .setYuvFormat(ImageFormat.YUV_420_888)
+                .create()
+
+        val outputAlloc = createTyped(
+                renderScript,
+                type,
+                USAGE_IO_OUTPUT or USAGE_SCRIPT
+        )
+
+        outputAlloc.surface = surface
+        return outputAlloc
     }
 
 }

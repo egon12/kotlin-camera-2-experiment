@@ -9,7 +9,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val fragment = HsvFragment.newInstance()
+        val fragment = when(intent.dataString) {
+            "hsv" -> HsvFragment.newInstance()
+            "uv_hue" -> RsInputFragment.newInstance()
+            else -> HsvFragment.newInstance()
+        }
 
         supportFragmentManager.beginTransaction().add(R.id.container, fragment).commit()
     }
