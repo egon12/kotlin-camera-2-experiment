@@ -67,7 +67,7 @@ tasks.create<Exec>("hsv") {
     )
 }
 
-tasks.create<Exec>("uv_hue") {
+tasks.create<Exec>("rs_input") {
     dependsOn("installDebug")
     commandLine(
             android.adbExecutable.path,

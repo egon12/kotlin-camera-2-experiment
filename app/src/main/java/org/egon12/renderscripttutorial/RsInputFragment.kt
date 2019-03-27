@@ -23,7 +23,9 @@ class RsInputFragment : Fragment() {
 
     private lateinit var renderScript: RenderScript
 
-    private lateinit var scriptC: ScriptC_uv_hue
+    private lateinit var scriptC_YUV: ScriptC_uv_hue
+
+    private lateinit var scriptC_RGB: ScriptC_rgb_input
 
     private val timeAnimator = TimeAnimator()
 
@@ -32,8 +34,6 @@ class RsInputFragment : Fragment() {
     companion object {
         fun newInstance() = RsInputFragment()
     }
-
-    private lateinit var viewModel: RsInputViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -44,11 +44,9 @@ class RsInputFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         renderScript = RenderScript.create(activity!!)
-        scriptC = ScriptC_uv_hue(renderScript)
-        viewModel = ViewModelProviders.of(this).get(RsInputViewModel::class.java)
-        println("one")
+        scriptC_YUV = ScriptC_uv_hue(renderScript)
+        scriptC_RGB = ScriptC_rgb_input(renderScript)
         channel.sendBlocking(Unit)
-
     }
 
 
@@ -65,12 +63,12 @@ class RsInputFragment : Fragment() {
 
 
             timeAnimator.setTimeListener { _, _, _ ->
-                scriptC._frame += 1
-                scriptC.forEach_process(allocation)
+                scriptC_YUV._frame += 1
+//                scriptC_YUV.forEach_process(allocation)
+                scriptC_RGB.forEach_process(allocation)
                 allocation.ioSend()
             }
 
-            println("two")
             channel.sendBlocking(Unit)
         }
     }
@@ -78,11 +76,8 @@ class RsInputFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         MainScope().launch {
-            println("three")
             channel.receive()
-            println("four")
             channel.receive()
-            println("fivec")
             timeAnimator.start()
         }
     }
