@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity() {
         val fragment = when(intent.dataString) {
             "hsv" -> HsvFragment.newInstance()
             "uv_hue" -> RsInputFragment.newInstance()
+            "composite" -> CompositeFragment.newInstance()
             else -> HsvFragment.newInstance()
         }
 

@@ -44,7 +44,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
 }
 
-tasks.create<Exec>("pie") {
+tasks.create < Exec > ("pie") {
     val emulator = android.sdkDirectory.path + "/emulator/emulator"
     val detach = "> /dev/null 2> /dev/null < /dev/null &"
     commandLine(
@@ -54,7 +54,7 @@ tasks.create<Exec>("pie") {
     )
 }
 
-tasks.create<Exec>("hsv") {
+tasks.create < Exec > ("hsv") {
     dependsOn("installDebug")
     commandLine(
             android.adbExecutable.path,
@@ -67,7 +67,7 @@ tasks.create<Exec>("hsv") {
     )
 }
 
-tasks.create<Exec>("rs_input") {
+tasks.create < Exec > ("rs_input") {
     dependsOn("installDebug")
     commandLine(
             android.adbExecutable.path,
@@ -80,8 +80,22 @@ tasks.create<Exec>("rs_input") {
     )
 }
 
+tasks.create < Exec > ("composite") {
+    dependsOn("installDebug")
+    commandLine(
+            android.adbExecutable.path,
+            "shell",
+            "am",
+            "start-activity",
+            "-n",
+            "org.egon12.renderscripttutorial/.MainActivity",
+            "-d composite"
+    )
+}
 
-tasks.create<Exec>("stop") {
+
+
+tasks.create < Exec > ("stop") {
     commandLine(
             android.adbExecutable.path,
             "shell",

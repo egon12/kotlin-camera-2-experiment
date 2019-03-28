@@ -9,7 +9,6 @@ import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.rs_input_fragment.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
