@@ -5,6 +5,7 @@ import android.media.MediaCodec.*
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaFormat.KEY_MIME
+import android.util.Size
 import android.view.Surface
 import java.io.IOException
 
@@ -31,21 +32,21 @@ class MediaCodecWrapper2 (private var mDecoder: MediaCodec) {
                     presentationTimeUs: Long,
                     flags: Int): Boolean {
 
-        var flags = flags
+        var flagsEdited = flags
 
         val index = mDecoder.dequeueInputBuffer(40_000)
         if (index < 0) {
             return false
         }
 
-        val buffer = mDecoder.getInputBuffer(index)
+        val buffer = mDecoder.getInputBuffer(index) ?: return false
         val size = extractor.readSampleData(buffer, 0)
         if (size <= 0) {
-            flags = flags or BUFFER_FLAG_END_OF_STREAM
+            flagsEdited = flagsEdited or BUFFER_FLAG_END_OF_STREAM
         }
         println("size: $size, time: ${extractor.sampleTime}")
 
-        mDecoder.queueInputBuffer(index, 0, size, presentationTimeUs, flags)
+        mDecoder.queueInputBuffer(index, 0, size, presentationTimeUs, flagsEdited)
 
         return true
     }
@@ -53,7 +54,7 @@ class MediaCodecWrapper2 (private var mDecoder: MediaCodec) {
     fun writeSample(byteArray: ByteArray): Boolean {
         val index = mDecoder.dequeueInputBuffer(40_000)
         if (index < 0) return false
-        val buffer = mDecoder.getInputBuffer(index)
+        val buffer = mDecoder.getInputBuffer(index) ?: return false
         buffer.put(byteArray)
         mDecoder.queueInputBuffer(index, 0, byteArray.size, 0, 0)
         return true
@@ -94,6 +95,17 @@ class MediaCodecWrapper2 (private var mDecoder: MediaCodec) {
             if (mimeType != "video/avc") {
                 throw Exception("Only support video/avc")
             }
+
+            return fromVideoFormat(mediaFormat, surface)
+        }
+
+        fun createH264Decoder(inputSize: Size, surface: Surface): MediaCodecWrapper2 {
+            val mediaFormat = MediaFormat
+                    .createVideoFormat(
+                            MediaFormat.MIMETYPE_VIDEO_AVC,
+                            inputSize.width,
+                            inputSize.height
+                    )
 
             return fromVideoFormat(mediaFormat, surface)
         }

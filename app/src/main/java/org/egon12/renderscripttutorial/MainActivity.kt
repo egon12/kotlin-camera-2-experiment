@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
             "hsv" -> HsvFragment.newInstance()
             "uv_hue" -> RsInputFragment.newInstance()
             "composite" -> CompositeFragment.newInstance()
+            "convolution" -> ConvolutionFragment.newInstance()
             else -> HsvFragment.newInstance()
         }
 
