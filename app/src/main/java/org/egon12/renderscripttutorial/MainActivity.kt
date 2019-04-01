@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
             "uv_hue" -> RsInputFragment.newInstance()
             "composite" -> CompositeFragment.newInstance()
             "convolution" -> ConvolutionFragment.newInstance()
+            "colorfilter" -> ColorFilterFragment.newInstance()
             else -> HsvFragment.newInstance()
         }
 

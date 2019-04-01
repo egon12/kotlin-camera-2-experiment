@@ -106,6 +106,20 @@ tasks.create < Exec > ("convolution") {
     )
 }
 
+tasks.create < Exec > ("colorfilter") {
+    dependsOn("installDebug")
+    commandLine(
+            android.adbExecutable.path,
+            "shell",
+            "am",
+            "start-activity",
+            "-n",
+            "org.egon12.renderscripttutorial/.MainActivity",
+            "-d colorfilter"
+    )
+}
+
+
 
 tasks.create < Exec > ("stop") {
     commandLine(
