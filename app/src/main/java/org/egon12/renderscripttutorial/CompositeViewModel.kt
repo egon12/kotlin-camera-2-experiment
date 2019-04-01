@@ -207,5 +207,9 @@ class CompositeViewModel : ViewModel() {
 
     }
 
+    fun setAlpha(value: Int) {
+        scriptC_composite._alpha = value.toFloat() / 100.0F
+    }
+
 
 }

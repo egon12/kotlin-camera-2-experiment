@@ -7,7 +7,7 @@ rs_allocation bottomFrame;
 
 rs_allocation topFrame;
 
-float alpha = 0.5;
+float alpha = 1;
 
 static void getYUV(rs_allocation frame, uint32_t x, uint32_t y, int* Y, int* u, int* v);
 
@@ -29,13 +29,13 @@ uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
         vo = vb;
 
         if (Yt > 20) {
-            Yo = Yt;
-            uo = ut;
-            vo = vt;
+            //Yo = Yt;
+            //uo = ut;
+            //vo = vt;
 
-            //Yo = compositeAlpha(Yt, alpha, Yb, 1.0);
-            //uo = compositeAlpha(ut, alpha, ut, 1.0);
-            //vo = compositeAlpha(vt, alpha, vt, 1.0);
+            Yo = compositeAlpha(Yt, alpha, Yb, 1.0);
+            uo = compositeAlpha(ut, alpha, ut, 1.0);
+            vo = compositeAlpha(vt, alpha, vt, 1.0);
         }
 
         return rsYuvToRGBA_uchar4(Yo, uo, vo);

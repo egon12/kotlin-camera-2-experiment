@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_composite.*
 import org.egon12.renderscripttutorial.allocation.AllocationFactory
 import org.egon12.renderscripttutorial.camera.CameraFacade
+import org.egon12.renderscripttutorial.util.SeekBarListener
 import org.egon12.renderscripttutorial.util.TextureAvailableListener
 
 class CompositeFragment : Fragment() {
@@ -47,6 +48,13 @@ class CompositeFragment : Fragment() {
             viewModel.setupOutputAllocation(Surface(it))
             viewModel.start()
         }
+
+        seek_bar.progress = 100
+        seek_bar.setOnSeekBarChangeListener(SeekBarListener{
+            viewModel.setAlpha(it)
+
+        })
+
     }
 
 
