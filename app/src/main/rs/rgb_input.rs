@@ -18,9 +18,9 @@ static uchar4 processHSV(uint32_t x, uint32_t y);
 static uchar4 black();
 
 uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
-    //return processRGBStandard(x, y);
+    return processRGBStandard(x, y);
     //return processRGBWidth(x, y);
-    return processHSV(x, y);
+    //return processHSV(x, y);
 }
 
 
@@ -46,8 +46,9 @@ static uchar4 processRGBWidth(uint32_t x, uint32_t y) {
 static uchar4 processHSV(uint32_t x, uint32_t y) {
     float h, s, v;
     h = x * 360 / 512;
-    s = y * 255 / 512;
-    return hsv2rgb(h, s, s);
+    s = 255;
+    //s = y * 255 / 512;
+    return hsv2rgb(h, s, 255);
 }
 
 

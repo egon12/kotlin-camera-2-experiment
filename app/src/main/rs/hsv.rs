@@ -38,6 +38,7 @@ uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
         }
 
         if (sForce) {
+            //s = sMultiplier;
             s = s * sMultiplier / 100;
         }
 
@@ -46,7 +47,7 @@ uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {
         }
 
 
-        h = h+10;
+        s -= 20;
         if (h > 360.0) h -= 360.0;
 
         return hsv2rgb(h, s, v);
