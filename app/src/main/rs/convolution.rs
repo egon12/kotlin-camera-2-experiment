@@ -113,7 +113,7 @@ static int convolution(int x, int y) {
         }
     }
 
-    return totalY / divider;
+    return abs(totalY / divider);
 
 }
 
@@ -140,9 +140,9 @@ static uchar4 convolutionRGB(int x, int y) {
 
 
     uchar4 result;
-    result.r = totalR / divider;
-    result.g = totalG / divider;
-    result.b = totalB / divider;
+    result.r = abs(totalR / divider);
+    result.g = abs(totalG / divider);
+    result.b = abs(totalB / divider);
     result.a = 255;
 
     return result;

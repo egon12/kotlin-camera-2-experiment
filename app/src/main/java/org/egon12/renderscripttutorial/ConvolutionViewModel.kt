@@ -83,22 +83,34 @@ class ConvolutionViewModel : ViewModel() {
     }
 
     fun setMatrix() {
-        //val matrixInt = arrayOf(
-        //        1, 1, 1,
-        //        1, 1, 1,
-        //        1, 1, 1
-        //)
+        val matrixInt = arrayOf(
+                1, 1, 1,
+                1, 1, 1,
+                1, 1, 1
+        )
 
-        //val matrixInt = arrayOf(
-        //        1, 1, 1, 1, 1,
-        //        1, 1, 1, 1, 1,
-        //        1, 1, 1, 1, 1,
-        //        1, 1, 1, 1, 1
-        //)
+//        val matrixInt = arrayOf(
+//                1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1
+//        )
+//
+//        val matrixInt = (0 until 81).map { 1 }.toIntArray()
 
-        val matrixInt = (0 until 81).map { 1 }.toIntArray()
+//        val matrixInt = arrayOf(
+//                 0,  1, 0,
+//                -1,  0, 1,
+//                 0, -1, 0
+//        )
 
-        scriptC._divider = 81
+//        val matrixInt = arrayOf(
+//                -1, 0, 1,
+//                -2, 0, 2,
+//                -1, 0, 1
+//        )
+
+        scriptC._divider = 1
 
         val matrix = matrixInt.map { it.toFloat() }
 
