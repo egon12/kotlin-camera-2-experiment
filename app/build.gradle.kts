@@ -119,6 +119,19 @@ tasks.create < Exec > ("colorfilter") {
     )
 }
 
+tasks.create < Exec > ("pt") {
+    dependsOn("installDebug")
+    commandLine(
+            android.adbExecutable.path,
+            "shell",
+            "am",
+            "start-activity",
+            "-n",
+            "org.egon12.renderscripttutorial/.MainActivity",
+            "-d pt"
+    )
+}
+
 
 
 tasks.create < Exec > ("stop") {

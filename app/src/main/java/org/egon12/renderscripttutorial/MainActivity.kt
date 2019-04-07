@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
             "composite" -> CompositeFragment.newInstance()
             "convolution" -> ConvolutionFragment.newInstance()
             "colorfilter" -> ColorFilterFragment.newInstance()
+            "pt" -> PerspectiveTransformFragment()
             else -> HsvFragment.newInstance()
         }
 
