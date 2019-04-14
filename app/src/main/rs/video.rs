@@ -1,8 +1,6 @@
 #pragma version(1)
 #pragma rs java_package_name(org.egon12.renderscripttutorial)
 
-#include "rs_graphics.rsh"
-
 rs_allocation inputFrame;
 
 uchar4 RS_KERNEL process(uint32_t x, uint32_t y) {

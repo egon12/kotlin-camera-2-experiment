@@ -1,8 +1,6 @@
 #pragma version(1)
 #pragma rs java_package_name(org.egon12.renderscripttutorial)
 
-#include "rs_graphics.rsh"
-
 uint32_t frame;
 
 static void rgb2hsv(uchar4 in, float* h, float* s, uchar* v);

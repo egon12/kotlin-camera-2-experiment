@@ -1,8 +1,6 @@
 #pragma version(1)
 #pragma rs java_package_name(org.egon12.renderscripttutorial)
 
-#include "rs_graphics.rsh"
-
 //rs_mesh snowMesh;
 
 typedef struct __attribute__((packed, aligned(4))) Snow {

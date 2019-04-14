@@ -1,8 +1,6 @@
 #pragma version(1)
 #pragma rs java_package_name(org.egon12.renderscripttutorial)
 
-#include "rs_graphics.rsh"
-
 float low=0;
 
 float high=360;
