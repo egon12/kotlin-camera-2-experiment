@@ -54,85 +54,28 @@ tasks.create < Exec > ("pie") {
     )
 }
 
-tasks.create < Exec > ("hsv") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d hsv"
-    )
-}
-
-tasks.create < Exec > ("rs_input") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d uv_hue"
-    )
-}
-
-tasks.create < Exec > ("composite") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d composite"
-    )
-}
-
-tasks.create < Exec > ("convolution") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d convolution"
-    )
-}
-
-tasks.create < Exec > ("colorfilter") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d colorfilter"
-    )
-}
-
-tasks.create < Exec > ("pt") {
-    dependsOn("installDebug")
-    commandLine(
-            android.adbExecutable.path,
-            "shell",
-            "am",
-            "start-activity",
-            "-n",
-            "org.egon12.renderscripttutorial/.MainActivity",
-            "-d pt"
-    )
+fun createTask(name: String) {
+    tasks.create < Exec > (name) {
+        dependsOn("installDebug")
+        commandLine(
+                android.adbExecutable.path,
+                "shell",
+                "am",
+                "start-activity",
+                "-n",
+                "org.egon12.renderscripttutorial/.MainActivity",
+                "-d $name"
+        )
+    }
 }
 
 
+createTask("rs_input")
+createTask("hsv")
+createTask("colorfilter")
+createTask("composite")
+createTask("convolution")
+createTask("pt")
 
 tasks.create < Exec > ("stop") {
     commandLine(
