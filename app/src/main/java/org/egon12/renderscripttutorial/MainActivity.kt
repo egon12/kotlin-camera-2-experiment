@@ -11,11 +11,13 @@ class MainActivity : AppCompatActivity() {
 
         val fragment = when(intent.dataString) {
             "hsv" -> HsvFragment.newInstance()
-            "uv_hue" -> RsInputFragment.newInstance()
+            "rs_input" -> RsInputFragment.newInstance()
             "composite" -> CompositeFragment.newInstance()
             "convolution" -> ConvolutionFragment.newInstance()
             "colorfilter" -> ColorFilterFragment.newInstance()
             "pt" -> PerspectiveTransformFragment()
+            "simpleBlur" -> SimpleBlurFragment()
+            "rotateY" -> RotateYFragment()
             else -> HsvFragment.newInstance()
         }
 

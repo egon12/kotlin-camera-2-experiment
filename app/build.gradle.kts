@@ -76,6 +76,8 @@ createTask("colorfilter")
 createTask("composite")
 createTask("convolution")
 createTask("pt")
+createTask("simpleBlur")
+createTask("rotateY")
 
 tasks.create < Exec > ("stop") {
     commandLine(
