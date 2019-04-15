@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
             "pt" -> PerspectiveTransformFragment()
             "simpleBlur" -> SimpleBlurFragment()
             "rotateY" -> RotateYFragment()
+            "glsl" -> GlslFragment()
             else -> HsvFragment.newInstance()
         }
 

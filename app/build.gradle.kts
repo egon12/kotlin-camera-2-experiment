@@ -78,6 +78,7 @@ createTask("convolution")
 createTask("pt")
 createTask("simpleBlur")
 createTask("rotateY")
+createTask("glsl")
 
 tasks.create < Exec > ("stop") {
     commandLine(
