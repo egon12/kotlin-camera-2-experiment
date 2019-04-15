@@ -14,6 +14,7 @@ interface CameraOpener {
 interface CameraChooser {
     fun getCameraId(): String
     fun getSize(cameraId: String): Size
+    fun getSize() = getSize(getCameraId())
 }
 
 interface CameraStarter {
