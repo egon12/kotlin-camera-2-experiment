@@ -17,7 +17,7 @@ class GlslFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val textureView = TextureView(activity)
+        val textureView = TextureView(activity!!)
 
 
         textureView.surfaceTextureListener = TextureAvailableListener {

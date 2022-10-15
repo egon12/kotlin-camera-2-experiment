@@ -243,7 +243,7 @@ class MediaCodecWrapper private constructor(private var mDecoder: MediaCodec) {
             var result: MediaCodecWrapper? = null
             var videoCodec: MediaCodec? = null
 
-            val mimeType = trackFormat.getString(MediaFormat.KEY_MIME)
+            val mimeType = trackFormat.getString(MediaFormat.KEY_MIME)!!
 
             if (mimeType.contains("video/")) {
                 videoCodec = MediaCodec.createDecoderByType(mimeType)

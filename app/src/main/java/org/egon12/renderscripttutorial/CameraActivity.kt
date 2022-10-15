@@ -31,19 +31,19 @@ class CameraActivity : AppCompatActivity(), CameraContract.View, TextureView.Sur
     private val _cameraRequestCode = 19
 
 
-    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
     }
 
-    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
         presenter.endCamera()
         return true
     }
 
-    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
 
     }
 
-    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         openCamera()
 
         val rotation = this.windowManager.defaultDisplay.rotation

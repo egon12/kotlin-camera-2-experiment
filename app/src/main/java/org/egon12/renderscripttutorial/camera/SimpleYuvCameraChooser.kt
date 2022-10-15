@@ -102,6 +102,6 @@ class SimpleYuvCameraChooser(private val cameraManager: CameraManager) : CameraC
             throw Exception("Camera doesn't have size below " + sizeBelow.width + " x " + sizeBelow.height)
         }
 
-        return outputSizes.maxBy { it.height }
+        return outputSizes.maxByOrNull { it.height }
     }
 }

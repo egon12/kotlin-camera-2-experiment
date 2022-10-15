@@ -45,7 +45,7 @@ class ColorFilterFragment : Fragment() {
             val (low, high) = viewModel.getFilterValue()
             val str = "low=$low;high=$high"
             Toast.makeText(activity, str, Toast.LENGTH_LONG).show()
-            clipboardManager.primaryClip = ClipData.newPlainText("Filter value", str)
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("Filter value", str))
         }
 
         low_seek_bar.setOnSeekBarChangeListener(SeekBarListener {

@@ -1,7 +1,7 @@
 package org.egon12.renderscripttutorial
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val fragment = when(intent.dataString) {
+        val fragment = when(intent.getStringExtra("fragment")) {
             "hsv" -> HsvFragment.newInstance()
             "rs_input" -> RsInputFragment.newInstance()
             "composite" -> CompositeFragment.newInstance()

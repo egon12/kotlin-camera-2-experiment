@@ -51,7 +51,7 @@ class SimpleBlurFragment : Fragment() {
     @SuppressLint("MissingPermission")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        textureView = TextureView(activity)
+        textureView = TextureView(activity?.baseContext!!)
 
         textureView.surfaceTextureListener = TextureAvailableListener {
 

@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.rs_input_fragment.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import org.egon12.renderscripttutorial.allocation.AllocationFactory
 import org.egon12.renderscripttutorial.util.TextureAvailableListener
@@ -42,10 +42,10 @@ class RsInputFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        renderScript = RenderScript.create(activity!!)
+        renderScript = RenderScript.create(context)
         scriptC_YUV = ScriptC_uv_hue(renderScript)
         scriptC_RGB = ScriptC_rgb_input(renderScript)
-        channel.sendBlocking(Unit)
+        channel.trySendBlocking(Unit)
     }
 
 
@@ -68,7 +68,7 @@ class RsInputFragment : Fragment() {
                 allocation.ioSend()
             }
 
-            channel.sendBlocking(Unit)
+            channel.trySendBlocking(Unit)
         }
     }
 
