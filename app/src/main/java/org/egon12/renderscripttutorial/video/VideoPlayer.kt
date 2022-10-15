@@ -11,7 +11,7 @@ class VideoPlayer(private val context: Context) {
 
     fun something(surface: Surface) {
         val mediaPlayer = MediaPlayer()
-        val uri = Uri.parse("android.resource://" + context.packageName + "/" + R.raw.example2)
+        val uri = Uri.parse("android.resource://" + context.packageName + "/" + R.raw.example)
 
         mediaPlayer.setDataSource(context, uri)
         mediaPlayer.setSurface(surface)
